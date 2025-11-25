@@ -9,45 +9,52 @@ const prisma = new PrismaClient();
 export const register = async (req: AuthRequest, res: Response) => {
   const { email, username, password, name } = req.body;
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { email },
-        { username },
-      ],
-    },
-  });
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { username },
+        ],
+      },
+    });
 
-  if (existingUser) {
-    return res.status(400).json({ error: 'User already exists' });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        password: hashedPassword,
+        name,
+      },
+    });
+
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+      },
+      token,
+    });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({ error: 'Failed to register user' });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      username,
-      password: hashedPassword,
-      name,
-    },
-  });
-
-  const token = jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET || 'fallback-secret',
-    { expiresIn: '7d' }
-  );
-
-  res.status(201).json({
-    user: {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      name: user.name,
-    },
-    token,
-  });
 };
 
 export const login = async (req: AuthRequest, res: Response) => {

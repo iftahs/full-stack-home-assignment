@@ -14,9 +14,9 @@ export interface Task {
   userId: string;
   createdAt: string;
   updatedAt: string;
-  user?: any;
-  assignments?: any[];
-  comments?: any[];
+  user?: User;
+  assignments?: unknown[];
+  comments?: Comment[];
 }
 
 export interface Comment {
@@ -25,8 +25,29 @@ export interface Comment {
   taskId: string;
   userId: string;
   createdAt: string;
-  user?: any;
+  user?: User;
 }
 
-export type ApiResponse = any;
+export type ApiResponse = unknown;
+
+export interface TaskFilters {
+  status?: string;
+  priority?: string;
+  search?: string;
+}
+
+export type CreateTaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>;
+export type UpdateTaskInput = Partial<CreateTaskInput>;
+
+export interface RegisterInput {
+  email: string;
+  username: string;
+  name: string;
+  password: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
 

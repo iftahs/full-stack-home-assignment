@@ -1,28 +1,56 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useForm } from '../hooks/useForm';
+import { Button } from '../components/dsm/Button';
+import { TextInput } from '../components/dsm/TextInput';
+import { RegisterInput } from '../types';
 
 export const Register = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    password: '',
-    name: '',
-  });
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: any) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const { formData, validate, values } = useForm<RegisterInput>({
+    email: {
+      name: 'email',
+      isRequired: true,
+      validationMessage: 'Email is required',
+    },
+    username: {
+      name: 'username',
+      isRequired: true,
+      validationMessage: 'Username is required',
+    },
+    name: {
+      name: 'name',
+      isRequired: true,
+      validationMessage: 'Name is required',
+    },
+    password: {
+      name: 'password',
+      isRequired: true,
+      validationMessage: 'Password is required',
+    },
+  });
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await register(formData);
-    navigate('/dashboard');
+    setError(null);
+    
+    if (!validate()) return;
+
+    setIsLoading(true);
+    try {
+      await register(values);
+      navigate('/dashboard');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -30,52 +58,46 @@ export const Register = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold mb-6">Register</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-          <button
+          <TextInput
+            label="Email"
+            type="email"
+            {...formData.email}
+            error={formData.email.validationError}
+            required={formData.email.isRequired}
+          />
+          <TextInput
+            label="Username"
+            type="text"
+            {...formData.username}
+            error={formData.username.validationError}
+            required={formData.username.isRequired}
+          />
+          <TextInput
+            label="Name"
+            type="text"
+            {...formData.name}
+            error={formData.name.validationError}
+            required={formData.name.isRequired}
+          />
+          <TextInput
+            label="Password"
+            type="password"
+            {...formData.password}
+            error={formData.password.validationError}
+            required={formData.password.isRequired}
+          />
+          <Button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            className="w-full"
+            isLoading={isLoading}
           >
             Register
-          </button>
+          </Button>
+          {error && (
+            <div className="mt-2 text-red-500 text-sm text-center">
+              {error}
+            </div>
+          )}
         </form>
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">

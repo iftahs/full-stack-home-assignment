@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TaskList } from '../components/TaskList';
-import { TaskForm } from '../components/TaskForm';
+import { TaskList } from '../components/tasks/TaskList';
+import { TaskForm } from '../components/tasks/TaskForm';
+import { Button } from '../components/dsm/Button';
 import { useTasks } from '../hooks/useTasks';
 import { useAuth } from '../hooks/useAuth';
+import { CreateTaskInput, TaskFilters } from '../types';
 
 export const Dashboard = () => {
   const [showForm, setShowForm] = useState(false);
-  const [filters, setFilters] = useState({});
-  const { createTask } = useTasks();
+  const [filters] = useState<TaskFilters>({});
+  const { createTask, fetchTasks } = useTasks();
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
-  const handleCreateTask = async (taskData: any) => {
+  const handleCreateTask = async (taskData: CreateTaskInput) => {
     await createTask(taskData);
+    await fetchTasks();
     setShowForm(false);
   };
 
@@ -35,18 +38,18 @@ export const Dashboard = () => {
             )}
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={() => setShowForm(!showForm)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              variant="primary"
             >
               {showForm ? 'Cancel' : 'New Task'}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              variant="secondary"
             >
               Logout
-            </button>
+            </Button>
           </div>
         </div>
 

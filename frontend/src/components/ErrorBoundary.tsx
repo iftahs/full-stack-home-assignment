@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { Button } from './dsm/Button';
 
 interface Props {
   children: ReactNode;
@@ -32,15 +33,16 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-gray-600 mb-4">
               An unexpected error occurred. Please try refreshing the page.
             </p>
-            <button
+            <Button
               onClick={() => {
                 this.setState({ hasError: false });
                 window.location.reload();
               }}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              className="px-4 py-2"
+              variant="primary"
             >
               Reload Page
-            </button>
+            </Button>
           </div>
         </div>
       );
