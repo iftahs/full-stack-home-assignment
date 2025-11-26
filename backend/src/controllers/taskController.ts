@@ -1,9 +1,6 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
-
-const prisma = new PrismaClient();
-
+import prisma from '../db/client';
 import { getIO } from '../socket';
 
 export const getTasks = async (req: AuthRequest, res: Response) => {
@@ -82,7 +79,21 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 export const updateTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.userId;
     const { title, description, status, priority } = req.body;
+
+    // Security check: Ensure task belongs to user
+    const existingTask = await prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!existingTask) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    if (existingTask.userId !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to update this task' });
+    }
 
     const task = await prisma.task.update({
       where: { id },
@@ -113,6 +124,20 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
 export const deleteTask = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.userId;
+
+    // Security check: Ensure task belongs to user
+    const existingTask = await prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!existingTask) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    if (existingTask.userId !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to delete this task' });
+    }
 
     await prisma.task.delete({
       where: { id },

@@ -1,6 +1,11 @@
 import { SpinnerIcon } from '../../assets/icons/SpinnerIcon';
 
-export const Spinner = ({ className = "", size = "sm" }: { className?: string; size?: "sm" | "md" | "lg" }) => {
+interface SpinnerProps {
+  className?: string;
+  size?: "sm" | "md" | "lg";
+}
+
+export const Spinner = ({ className = "", size = "sm" }: SpinnerProps) => {
   const sizeClasses = {
     sm: "h-5 w-5",
     md: "h-8 w-8",

@@ -6,6 +6,7 @@ import { TextArea } from '../dsm/TextArea';
 import { Select } from '../dsm/Select';
 import { Task, UpdateTaskInput } from '../../types';
 import { EllipsisVerticalIcon } from '../../assets/icons/EllipsisVerticalIcon';
+import { Badge } from '../dsm/Badge';
 
 interface TaskListProps {
   tasks: Task[];
@@ -164,12 +165,12 @@ export const TaskList = ({ tasks, loading, updateTask, deleteTask }: TaskListPro
                 <h3 className="font-semibold text-lg dark:text-white">{task.title}</h3>
                 <p className="text-gray-600 mt-1 dark:text-gray-300">{task.description || ''}</p>
                 <div className="flex gap-2 mt-2">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm dark:bg-blue-900 dark:text-blue-200">
+                  <Badge variant="primary">
                     {task.status.replace(/_/g, ' ')}
-                  </span>
-                  <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm dark:bg-gray-700 dark:text-gray-300">
+                  </Badge>
+                  <Badge variant="neutral">
                     {task.priority}
-                  </span>
+                  </Badge>
                 </div>
               </div>
               
