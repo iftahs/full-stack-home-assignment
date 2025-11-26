@@ -35,8 +35,8 @@ export const TextArea = ({
         className={`w-full border rounded px-3 py-2 outline-none transition-colors ${
           error
             ? 'border-red-500 focus:border-red-500'
-            : 'border-gray-300 focus:border-blue-500'
-        } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'} ${className}`}
+            : 'border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:focus:border-blue-400'
+        } ${disabled ? 'bg-gray-100 cursor-not-allowed dark:bg-gray-800' : 'bg-white dark:bg-gray-700'} dark:text-white ${className}`}
         {...props}
       />
     </BaseInput>

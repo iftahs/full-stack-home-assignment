@@ -4,42 +4,42 @@ import { AuthRequest } from '../middleware/auth';
 
 const prisma = new PrismaClient();
 
+import { getIO } from '../socket';
+
 export const getTasks = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { search, status } = req.query;
+  const { search, status, priority } = req.query;
 
-  let tasks;
-  if (search) {
-    const query = `SELECT * FROM Task WHERE userId = '${userId}' AND (title LIKE '%${search}%' OR description LIKE '%${search}%')`;
-    tasks = await prisma.$queryRawUnsafe(query);
-  } else {
-    tasks = await prisma.task.findMany({
-      where: {
-        userId,
-        ...(status && { status: status as string }),
-      },
-    });
+  const whereClause: any = {
+    userId,
+  };
 
-    for (const task of tasks) {
-      const user = await prisma.user.findUnique({ where: { id: task.userId } });
-      (task as any).user = user;
-    }
-
-    for (const task of tasks) {
-      const assignments = await prisma.taskAssignment.findMany({
-        where: { taskId: task.id },
-      });
-      
-      for (const assignment of assignments) {
-        const assignee = await prisma.user.findUnique({
-          where: { id: assignment.userId },
-        });
-        (assignment as any).user = assignee;
-      }
-      
-      (task as any).assignments = assignments;
-    }
+  if (status) {
+    whereClause.status = status as string;
   }
+
+  if (priority) {
+    whereClause.priority = priority as string;
+  }
+
+  if (search) {
+    whereClause.OR = [
+      { title: { contains: search as string } }, // Removed mode: 'insensitive' for compatibility if not configured
+      { description: { contains: search as string } },
+    ];
+  }
+
+  const tasks = await prisma.task.findMany({
+    where: whereClause,
+    include: {
+      user: true,
+      assignments: {
+        include: {
+          user: true
+        }
+      }
+    }
+  });
 
   res.json(tasks);
 };
@@ -61,8 +61,17 @@ export const createTask = async (req: AuthRequest, res: Response) => {
         priority: priority || 'MEDIUM',
         userId: userId!,
       },
+      include: {
+        user: true,
+        assignments: {
+          include: {
+            user: true
+          }
+        }
+      }
     });
 
+    getIO().emit('taskCreated', task);
     res.status(201).json(task);
   } catch (error) {
     console.error('Error creating task:', error);
@@ -83,8 +92,17 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
         ...(status && { status }),
         ...(priority && { priority }),
       },
+      include: {
+        user: true,
+        assignments: {
+          include: {
+            user: true
+          }
+        }
+      }
     });
 
+    getIO().emit('taskUpdated', task);
     res.json(task);
   } catch (error) {
     console.error('Error updating task:', error);
@@ -100,6 +118,7 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
       where: { id },
     });
 
+    getIO().emit('taskDeleted', id);
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting task:', error);

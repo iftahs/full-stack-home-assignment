@@ -80,7 +80,8 @@ export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
         label="Status"
         required={formData.status.isRequired}
         error={formData.status.validationError}
-        {...formData.status}
+        value={formData.status.value}
+        onChange={(value) => formData.status.onChange({ target: { value } } as any)}
         options={[
           { label: 'TO DO', value: 'TODO' },
           { label: 'IN PROGRESS', value: 'IN_PROGRESS' },
@@ -91,7 +92,8 @@ export const TaskForm = ({ onSubmit, initialData }: TaskFormProps) => {
         label="Priority"
         required={formData.priority.isRequired}
         error={formData.priority.validationError}
-        {...formData.priority}
+        value={formData.priority.value}
+        onChange={(value) => formData.priority.onChange({ target: { value } } as any)}
         options={[
           { label: 'LOW', value: 'LOW' },
           { label: 'MEDIUM', value: 'MEDIUM' },
